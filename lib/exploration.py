@@ -196,7 +196,9 @@ def fig_price_story(stock, h=H_DEFAULT, k=K_DEFAULT, max_labels=8,
             base = base + vals
             leg_h.append(Patch(color=color, alpha=0.6, label=label))
         axPb.set_ylabel("일별 댓글 수", fontsize=10)
-        axPb.set_ylim(0, max(1, base.max() * 2.6))    # 막대는 하단에 깔리게
+        ymax = (int(np.ceil(base.max() / 100)) + 1) * 100   # 최대 위 한 칸 여유(예: 282→400)
+        axPb.set_ylim(0, ymax)
+        axPb.grid(False)                              # 댓글수 축 그리드는 끔(겹침 방지)
         axP.set_zorder(axPb.get_zorder() + 1)         # 가격·사건을 막대 위로
         axP.patch.set_visible(False)
     axP.legend(handles=leg_h, loc="lower left", fontsize=10, ncol=2)
