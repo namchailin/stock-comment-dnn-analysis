@@ -29,8 +29,8 @@
 
 ## 2차 보강 — expert_control (고수후보+대조군, 전기간 분포)
 1차의 좁은 윈도우와 달리 6개월 전체에 퍼져 있음(유저당 예측 수↑ → 희소클래스 보강 + 실력 재현성 검정).
-![expert_control_TSLA](expert_control_TSLA.png)
-![expert_control_NVDA](expert_control_NVDA.png)
+![expert_control_TSLA](expert_control_tsla.png)
+![expert_control_NVDA](expert_control_nvda.png)
 
 ## 역방향 Fold B (미사용)
 비용상 양방향 교차를 포기 → 아래 두 split은 추출만 하고 라벨링/학습에 **사용하지 않음**.

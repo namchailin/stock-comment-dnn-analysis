@@ -10,18 +10,18 @@
 ---
 
 ## Step 1. 데이터 수집 + 가명처리
-- [x] 토스증권 6개월 크롤링 (236,003건 = TSLA 122,171 + NVDA 113,832) — `raw_data/{TSLA,NVDA}_comments.csv`, `1_collect/crawler.py`
-- [x] HMAC 가명처리 (닉네임_ID, 동일작성자 구분 유지) — `1_collect/anonymize.py`, `raw_data/merged_comments.csv`
-- [x] 8개 컬럼 구성 (작성일 ISO·KST 초단위 포함) — `merged_comments.csv` 헤더 검증
-- [x] 주가 시계열 1d/1h 확보 (라벨 전용) — `raw_data/{TSLA,NVDA}_prices_{1d,1h}.csv`, `1_collect/fetch_prices.py`
+- [x] 토스증권 6개월 크롤링 (236,003건 = TSLA 122,171 + NVDA 113,832) — `data/unlabeled/raw/{TSLA,NVDA}_comments.csv`, `1_collect/crawler.py`
+- [x] HMAC 가명처리 (닉네임_ID, 동일작성자 구분 유지) — `1_collect/anonymize.py`, `data/unlabeled/raw/merged_comments.csv`
+- [x] 8개 컬럼 구성 (작성일 ISO·KST 초단위 포함) — `data/unlabeled/raw/merged_comments.csv` 헤더 검증
+- [x] 주가 시계열 1d/1h 확보 (라벨 전용) — `data/unlabeled/raw/{TSLA,NVDA}_prices_{1d,1h}.csv`, `1_collect/fetch_prices.py`
 
 ## Step 2. EDA
 ### 라벨링 전(前)
 - [x] 변동 판정선 스윕 → **h=5, k=1.0 확정** (변동 지속율 기준) — `lib/exploration.py`, 스윕 figure
 - [x] 종목별 주가추이 + 변동밴드 스토리 차트 — `results/figures/fig_price_story_*` · 구간 커버리지 `data/unlabeled/splits/*.png`(+README.md)
-- [x] 댓글 길이/토큰 분포 → **max_length=512 확정** (p95=43·p99=222·>512 0.31%) — `raw_data/token_len_{kcelectra,kcbert}.npy`
-- [x] 유저 메타데이터 비율 (주주 66.1% / 뱃지 3.9%, 유저단위) — `results/EDA_1.md`
-- [x] 변동성↔댓글량 상관 (TSLA r=0.45 / NVDA r=0.33, p<.001) — `fig5_volatility_timeseries.png`
+- [x] 댓글 길이/토큰 분포 → **max_length=512 확정** (p95=43·p99=222·>512 0.31%) — `data/unlabeled/raw/token_len_{kcelectra,kcbert}.npy`
+- [x] 유저 메타데이터 비율 (주주 66.1% / 뱃지 3.9%, 유저단위) — `2_eda/EDA.md`
+- [x] 변동성↔댓글량 상관 (TSLA r=0.45 / NVDA r=0.33, p<.001) — `results/figures/fig5_volatility_timeseries.png`
 ### 라벨링 후(後) — **완료** (`2_eda/eda_post.py` → fig6~fig10)
 - [x] 4-Class 라벨 분포 (Class 3 희소성 노출) — fig6
 - [x] Class0_사유 구성 비율 — fig7
@@ -148,12 +148,12 @@
 |---|---|---|
 | **양방향 → 단방향(Fold A), 그리고 부분 데이터** | TSLA학습 14,991 → NVDA평가 3,667. train_B/test_B 생략, test_A도 9k 못 채우고 중단 | 라벨링 비용 폭증(실측 콜당 ~$0.015, 서버 빈응답 과금+재시도, 총 $282 소진). 양방향·풀 데이터는 한계/후속과제 |
 | **κ 검수 연기** | 사람 κ 검수를 **발표 후**로. 도구만 준비 | 시간 부족. 발표 전 "라벨 잘 됨" 가정, 한계로 명시 |
-| **학습은 Colab A100** | 로컬 GPU 없음(nvidia-smi 실패) → `train_colab.py` 독립본으로 사용자가 코랩 실행 | WSL에 작동 드라이버 없음 |
+| **학습은 Colab A100** | 로컬 GPU 없음(nvidia-smi 실패) → `lib/train_colab.py` 독립본으로 사용자가 코랩 실행 | WSL에 작동 드라이버 없음 |
 | **라벨 모델 qwen3.5-397b-a17b** | 검증 통과(색상·예측리액션·JSON·날짜환산) | 한국어 강·JSON 안정 |
 | **τ=0.5, k=1.0, h=5, max_len=512** | 확정 파라미터 | EDA/문서 확정 |
 | **종목필터 스킵, 종목 범용 용어집** | 사전필터 생략(LLM Class0_사유 흡수), 용어집 종목특화 제외 | 새 종목 일반화 위해 |
 
 ### 남은 열린 항목
-- `[?]` **ModernBERT-ko 체크포인트** — preview·임베딩용이면 분류 부적합, MLM 계열 확인 후 `train_colab.py MODELS`에 추가
-- `[~]` **κ 검수** — 발표 후 `make_review_sheet.py` 실행
+- `[?]` **ModernBERT-ko 체크포인트** — preview·임베딩용이면 분류 부적합, MLM 계열 확인 후 `lib/train_colab.py MODELS`에 추가
+- `[~]` **κ 검수** — 발표 후 `3_label/make_review_sheet.py` 실행
 - `[~]` **양방향 교차(Fold B)** — 후속(비용 여유 시 train_B/test_B 라벨링 → train_colab에 B 추가)
