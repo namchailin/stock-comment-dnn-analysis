@@ -3,23 +3,26 @@
 > plan.md를 판정 가능한 항목으로 분해한 진도판. 각 항목 = **판정기준** + **증거(산출물)**.
 > 상태: `[x]` 완료 · `[~]` 부분/진행중 · `[ ]` 미착수 · `[!]` 막힘/결정필요
 > 최종 갱신: 2026-06-06 (Colab 학습 진행중 — KcELECTRA val macro-F1 ~0.40)
+>
+> **메인 목표**: 댓글로 주가를 맞힌 "실력자(=적중 댓글 C2/C3)"를 **분류기로 감지**한다 — train1(verify: 신호 존재 확인) → train2(retrain: 희소클래스 보강해 감지력↑). 적중이 운/실력인지는 **보조**로 가볍게만(코드 `archive/`).
+> **구조**: 단계 폴더 `1_collect→2_eda→3_label→4_train1_verify→5_train2_retrain→6_skill_check` + 공유 `lib/`. 상세 `README.md`.
 
 ---
 
 ## Step 1. 데이터 수집 + 가명처리
-- [x] 토스증권 6개월 크롤링 (236,003건 = TSLA 122,171 + NVDA 113,832) — `raw_data/{TSLA,NVDA}_comments.csv`, `collection/crawler.py`
-- [x] HMAC 가명처리 (닉네임_ID, 동일작성자 구분 유지) — `collection/anonymize.py`, `raw_data/merged_comments.csv`
+- [x] 토스증권 6개월 크롤링 (236,003건 = TSLA 122,171 + NVDA 113,832) — `raw_data/{TSLA,NVDA}_comments.csv`, `1_collect/crawler.py`
+- [x] HMAC 가명처리 (닉네임_ID, 동일작성자 구분 유지) — `1_collect/anonymize.py`, `raw_data/merged_comments.csv`
 - [x] 8개 컬럼 구성 (작성일 ISO·KST 초단위 포함) — `merged_comments.csv` 헤더 검증
-- [x] 주가 시계열 1d/1h 확보 (라벨 전용) — `raw_data/{TSLA,NVDA}_prices_{1d,1h}.csv`, `collection/fetch_prices.py`
+- [x] 주가 시계열 1d/1h 확보 (라벨 전용) — `raw_data/{TSLA,NVDA}_prices_{1d,1h}.csv`, `1_collect/fetch_prices.py`
 
 ## Step 2. EDA
 ### 라벨링 전(前)
-- [x] 변동 판정선 스윕 → **h=5, k=1.0 확정** (변동 지속율 기준) — `exploration/eda.py`, 스윕 figure
+- [x] 변동 판정선 스윕 → **h=5, k=1.0 확정** (변동 지속율 기준) — `lib/exploration.py`, 스윕 figure
 - [x] 종목별 주가추이 + 변동밴드 스토리 차트 — `results/figures/fig_price_story_*`, `fig1_highlight_*`
 - [x] 댓글 길이/토큰 분포 → **max_length=512 확정** (p95=43·p99=222·>512 0.31%) — `raw_data/token_len_{kcelectra,kcbert}.npy`
 - [x] 유저 메타데이터 비율 (주주 66.1% / 뱃지 3.9%, 유저단위) — `results/EDA_1.md`
 - [x] 변동성↔댓글량 상관 (TSLA r=0.45 / NVDA r=0.33, p<.001) — `fig5_volatility_timeseries.png`
-### 라벨링 후(後) — **완료** (`eda_post.py` → fig6~fig10)
+### 라벨링 후(後) — **완료** (`2_eda/eda_post.py` → fig6~fig10)
 - [x] 4-Class 라벨 분포 (Class 3 희소성 노출) — fig6
 - [x] Class0_사유 구성 비율 — fig7
 - [x] 댓글-변동 시점관계 분포 (예측 vs 리액션 비중) — fig8
@@ -27,7 +30,7 @@
 - [x] 사용자별 일관성 지표 (해석·보조용) — fig10
 
 ## 전처리 (학습/평가셋 추출) — plan Step 3 전반부
-- [x] 종목 교차 4개 창 추출 (fig1_highlight 구간) — `exploration/preprocess.py`
+- [x] 종목 교차 4개 창 추출 (fig1_highlight 구간) — `4_train1_verify/preprocess.py`
 - [x] 클리닝: URL 제거(0.7% 적용) + 3자 이하(이미 0건) — `data/*.csv`
 - [x] 평가셋 user-disjoint (A: 277명/1017건 제거, B: 306명/1410건 제거)
 - [x] data/ 보안 분리 (`실제_닉네임` 제외, `닉네임_ID`만)
@@ -36,12 +39,12 @@
 - 산출: `data/train_A_TSLA(20,206)` · `train_B_NVDA(20,052)` · `test_A_NVDA(9,084)` · `test_B_TSLA(8,870)`
 
 ## Step 3. LLM 4-Class Pseudo Labeling  — **완료(부분, 충분)**
-- [x] (3-0) 도메인 그라운딩: **색상관례 빨강=상승/파랑=하락** — `labeling/prompt.py`
-- [x] (3-0) 도메인 용어집 + 예측vs리액션 few-shot 6개 — `labeling/prompt.py`
-- [x] (3-1) 입력: 댓글 + **직전 48h 가격맥락(1h CSV, fallback 8봉)** + 용어집 — `labeling/price_context.py`
-- [x] (3-1) 출력 스키마 6컬럼 + JSON 검증 — `labeling/prompt.py`·`run_label.py`
+- [x] (3-0) 도메인 그라운딩: **색상관례 빨강=상승/파랑=하락** — `3_label/prompt.py`
+- [x] (3-0) 도메인 용어집 + 예측vs리액션 few-shot 6개 — `3_label/prompt.py`
+- [x] (3-1) 입력: 댓글 + **직전 48h 가격맥락(1h CSV, fallback 8봉)** + 용어집 — `3_label/price_context.py`
+- [x] (3-1) 출력 스키마 6컬럼 + JSON 검증 — `3_label/prompt.py`·`3_label/run_label.py`
 - [x] **τ(확신도 컷오프) = 0.5 확정** (Step5에서 0.4/0.6 민감도 재확인)
-- [x] 러너(동시성·재개·체크포인트) 빌드 — `labeling/run_label.py`
+- [x] 러너(동시성·재개·체크포인트) 빌드 — `3_label/run_label.py`
 - [x] `.env` 셋업 (API_KEY 완료, **MODEL=qwen3.5-397b-a17b 확정** — 엔드포인트 최신·최대 Qwen)
 - [x] **검증 통과** — 14건(색상8+예측6) JSON 100%·에러0 + 색상관례 정확 + 예측리액션 + 날짜환산("연말"→12-31)
 - [~] **라벨링 — Fold A만** (양방향 포기): train_A_TSLA + test_A_NVDA. train_B/test_B 스킵
@@ -50,22 +53,22 @@
   - [x] 버그 수정: 에러행 컬럼 불일치(CSV 깨짐) → 모든 행 동일 8컬럼(`OUTCOLS`)+견고한 읽기
   - [x] **라벨링 종료(부분, 충분)**: train_A **14,991** + test_A **3,667**. API 예산 2회 소진(총 $282) + 서버 빈응답 과금 이슈로 중단. test 3,667이면 평가 충분 → 더 안 씀
   - [x] **finalize 완료**(로컬·무료) → `final_train_A_TSLA.csv`·`final_test_A_NVDA.csv`. Class분포: train[0:80.2%,1:15.5%,2:4.1%,**3:0.2%(35건)**] / test[0:86%,1:3.8%,2:8.6%,**3:1.5%(56건)**]. 4클래스 다 존재
-  - [x] **라벨링후 EDA**(plan 3-2) `eda_post.py` → fig6~fig10 (4-Class분포·Class0사유·시점방향·뱃지교차·일관성)
+  - [x] **라벨링후 EDA**(plan 3-2) `2_eda/eda_post.py` → fig6~fig10 (4-Class분포·Class0사유·시점방향·뱃지교차·일관성)
   - ⚠️ **Class 3 극희소(train 35건)** → 한계로 명시(★3), 학습은 class weight로 보완
   - 남은 단계 전부 무료: Colab 학습(사용자 A100) + κ검수(후속)
 - [x] 러너 보강: resume이 에러행 자동 재시도(중복정리 후 재기록) — 고동시성 안전
 - [x] 최종 용어집: 종목 범용 + 8+2블록(사용자 확장본). 종목특화 제외
-- [x] **(3-2)/(3-3) `finalize_labels.py` 준비완료** — 앵커세션·W_dir·W_hit·Decision Logic(τ=0.5), 헬퍼 검증통과
-- [x] 정책문서 `labeling.md` (루트)
-- [x] (3-2) 주가 결과 결정적 계산 ($W_{dir}$·$W_{hit}$) — `finalize_labels.py` 실행 완료
+- [x] **(3-2)/(3-3) `3_label/finalize_labels.py` 준비완료** — 앵커세션·W_dir·W_hit·Decision Logic(τ=0.5), 헬퍼 검증통과
+- [x] 정책문서 `3_label/labeling.md`
+- [x] (3-2) 주가 결과 결정적 계산 ($W_{dir}$·$W_{hit}$) — `3_label/finalize_labels.py` 실행 완료
 - [x] (3-3) Decision Logic으로 Class 0~3 부여 — `final_*.csv` 생성 완료
-- [~] **사람 κ 검수 — 발표 후로 연기(deferred)**. 도구 준비됨(`labeling/make_review_sheet.py` + 2번째모델 자동κ 옵션). 발표 전엔 "라벨 잘 됨" 가정
+- [~] **사람 κ 검수 — 발표 후로 연기(deferred)**. 도구 준비됨(`3_label/make_review_sheet.py` + 2번째모델 자동κ 옵션). 발표 전엔 "라벨 잘 됨" 가정
 
 ## Step 4. 딥러닝 모델 학습 — **Colab(A100) 진행중** ← **현재 위치**
-- [x] **학습셋 정책 확정** `model/final_train_sampling.md` — enriched(1차+round-2 TSLA) 학습 + nvda_eval 자연분포 평가, 댓글단위 C2/C3 보강+손실가중(별도 CAP빌드 폐기), user-disjoint 0명·하락적중0건 한계 명시, 부록A 용어오해방지(고수후보≠실력점수TOP10)
-- [x] **보강 시각화** `fig_enrich.py` → `results/figures/fig_enrich_c2c3.png` — C2 608→909·C3 35→60, 적중표본 643→969(1차643+2차고수후보200+대조군126)
+- [x] **학습셋 정책 확정** `5_train2_retrain/final_train_sampling.md` — enriched(1차+round-2 TSLA) 학습 + nvda_eval 자연분포 평가, 댓글단위 C2/C3 보강+손실가중(별도 CAP빌드 폐기), user-disjoint 0명·하락적중0건 한계 명시, 부록A 용어오해방지(고수후보≠실력점수TOP10)
+- [x] **보강 시각화** `5_train2_retrain/fig_enrich.py` → `results/figures/fig_enrich_c2c3.png` — C2 608→909·C3 35→60, 적중표본 643→969(1차643+2차고수후보200+대조군126)
 - **근거(보강=주 수단 / 가중=보조)**: macro-F1은 희소클래스 성능을 평가 핵심으로 만드는 *동기*일 뿐 → 보강은 근본원인(절대 표본 부족·러닝커브 기근)을 직접 해소, macro-F1 기준 모델선택(`metric_for_best_model`)이 균형 좋은 체크포인트를 골라줘 손실 재가중은 보조. 단 보강 후에도 C0:C3≈360:1 잔여 불균형이라 focal+weight 완화는 유지. ※ "macro-F1이라서 보강만으로 충분"은 인과 역전(지표는 더 하라는 근거지 덜 하라는 근거 아님)
-- [x] 코드 준비완료: `model/train_colab.py` + **2단계 Colab 노트북** — `model/train_colab_1_verify.ipynb`(1단계: 원본셋 파이프라인 검증·baseline) → `model/train_colab_2_retrain.ipynb`(2단계: enriched 보강+focal/weight완화로 본 학습)
+- [x] 코드 준비완료: `lib/train_colab.py` + **2단계 Colab 노트북** — `4_train1_verify/train_colab_1_verify.ipynb`(1단계: 원본셋 파이프라인 검증·baseline) → `5_train2_retrain/train_colab_2_retrain.ipynb`(2단계: enriched 보강+focal/weight완화로 본 학습)
 - [x] KcELECTRA **특수토큰 TemplateProcessing** — **Colab에서 적용 확인됨**("[특수토큰 보정]" 로그)
 - [x] 입력: 텍스트 + `[주주]`/`[비주주]` prepend(임베딩 resize) / **뱃지 제외** — 동작 확인
 - [x] 불균형: class weight CE / macro-F1 early stopping(학습셋 val 분리) — 동작 확인
@@ -76,16 +79,16 @@
 - [x] 교차평가 A: TSLA학습→NVDA평가. **벤치마크 3모델 macro-F1: KLUE-RoBERTa 0.398(최고) > KcELECTRA 0.344 > KR-FinBERT 0.344**
 - [x] 베이스라인 대비: 다수클래스 0.231 / TF-IDF+LR 0.323 → **모델이 베이스라인 상회**(가치 입증)
 - [x] macro-F1 · 클래스별 PR · 4×4 혼동행렬 보고됨
-- [x] **러닝커브 진단** (`learning_curve.ipynb`): C2-F1 0→0.024→0.048→**0.065(전체)** 계속 우상향 → **C2 적중 판별은 (b)데이터부족**(신호부재 아님). "운이다" 단정 불가, 라벨 확대 후속과제
+- [x] **러닝커브 진단** (`4_train1_verify/learning_curve.ipynb`): C2-F1 0→0.024→0.048→**0.065(전체)** 계속 우상향 → **C2 적중 판별은 (b)데이터부족**(신호부재 아님). "운이다" 단정 불가, 라벨 확대 후속과제
 - [x] **오류 분석**: C2(방향적중) 대부분 C1(실패)로 혼동 — 텍스트로 적중/실패 구분이 본질적으로 어렵거나 데이터부족. 러닝커브로 후자 지지
 - [x] **운 vs 실력 분석 — 핵심 발견(이층 구조)**:
-  - **단일 댓글 수준 = 운**: ① C1 vs C2 LLM특징 통계적 동일(확신도 차 0.009·역방향, 근거 p=0.38) ② 러닝커브 C2-F1 우상향(데이터부족) ③ C3 순열검정(`perm_c3.py`) 날짜적중률=무작위(p=0.31/1.00) → 단일 글론 적중 예측 불가
-  - **사람 수준 = 실력 존재**: 유저 일관성 과분산 검정(`user_consistency.py`) **분산비 1.71, p<0.001** + 60%+ 꾸준유저 14명(우연 8.7, p=0.013) → **track record엔 통계적으로 유의한 '꾸준한 고수' 존재**
-  - **헤드라인**: "적중은 한 줄의 글론 운과 구별 안 되지만, 누적 기록으론 실력이 드러난다" (분류기가 C1/C2 못 가르는 이유 설명)
-  - 단서: 시장타이밍·방향편향 혼동 가능 → split-half 검정으로 추가 확정 권장. fig11
+  - **단일 댓글 수준 = 운**: ① C1 vs C2 LLM특징 통계적 동일(확신도 차 0.009·역방향, 근거 p=0.38) ② 러닝커브 C2-F1 우상향(데이터부족) ③ C3 순열검정(`archive/perm_c3.py`) 날짜적중률=무작위(p=0.31/1.00) → 단일 글론 적중 예측 불가
+  - **사람 수준 = 실력 존재**: 유저 일관성 과분산 검정(`archive/user_consistency.py`) **분산비 1.71, p<0.001** + 60%+ 꾸준유저 14명(우연 8.7, p=0.013) → **track record엔 통계적으로 유의한 '꾸준한 고수' 존재**
+  - **메모(보조)**: "적중은 한 줄의 글만으로는 운과 구별이 어렵다" — 분류기가 C1/C2를 가르기 어려운 점과 연결되는 가벼운 곁들임(본편 아님)
+  - 단서: 시장타이밍·방향편향 혼동 가능. fig11
 
-### 🎯 운 vs 실력 심층분석 계획 (발표 헤드라인 — "뽕 패키지")
-> 포지셔닝: "분류기 제작"이 아니라 "**적중=운/실력을 다각도 통계검증한 연구**". 이층 구조(단일글=운 / 사람=실력)가 핵심 메시지.
+### (보조) 운 vs 실력 — 가볍게 곁들임 · 본편 아님 (코드 `archive/`)
+> 포지셔닝: **메인은 "실력자(적중 댓글) 감지 분류기".** 아래 운/실력 통계검정은 *부차적 보조*로, 코드는 `archive/`에 보관하고 발표에선 "어쩌면 운일 수도 있다" 수준으로 한두 줄만 언급(또는 생략). 결과는 기록용으로 남김.
 - [x] **B. 통계적 무차이** — C1 vs C2 특징차 검정(확신도 효과 0+역방향, 근거 p=0.38) → 단일글 구별불가
 - [x] **C. 유저 과분산 검정** — 분산비 1.71·p<0.001, 60%+ 14명(p=0.013) → 사람단위 실력 존재 (fig11)
 - [x] **C3 순열검정** — 날짜적중=무작위(p=0.31/1.00) → 날짜선택 운
@@ -93,13 +96,13 @@
   - **수정된 최종 결론**: 운이 지배적(단일글·날짜·사람지속성 전부 실력신호 없음). 단 검정력 약함(41명) → "이 데이터론 실력 미검출"
 - [x] **★ 2차 Held-out 실력검정 (최종·결정적)** — 1차 적중 고수후보(C2/C3≥2)를 그들의 *새 댓글*(2차 라벨 20,071)로 검증:
   - **모집단**: 고수후보 130 선정 → round-2 댓글 보유 **119**(11명은 6개월 댓글이 전부 1차에서 라벨돼 미라벨 차집합 0 → 자연탈락, 버그 아님) → 예측 10회↑ **62** (대조군 116→~48)
-  - **두 검증 트랙 분리**: ①분류기=종목축(TSLA학습→NVDA평가) / ②실력검정=시점축(1차선정→round-2). ②는 사람 적중 재현성이라 종목 안 묶고 round-2 전체(TSLA+NVDA) 사용 → **현행 유지**(NVDA-only는 표본·검정력 붕괴). 상세 `labeling_consistency.md §3-1·3-2`
+  - **두 검증 트랙 분리**: ①분류기=종목축(TSLA학습→NVDA평가) / ②실력검정=시점축(1차선정→round-2). ②는 사람 적중 재현성이라 종목 안 묶고 round-2 전체(TSLA+NVDA) 사용 → **현행 유지**(NVDA-only는 표본·검정력 붕괴). 상세 `5_train2_retrain/labeling_consistency.md §3-1·3-2`
   - 원시: NVDA 고수후보 19% vs 대조군 13.2%(p=0.004), TSLA 9.0 vs 9.2(p=0.80)
   - **교란 발견**: 고수후보=상승편향(NVDA 88% vs 대조군 48%) → NVDA우위는 "상승론×상승장"
   - **종목+방향 통제 로지스틱: 고수후보 계수 +0.175, p=0.068 → 유의X** = 실력 우위 통계적으로 미확정(편향·시장이 주)
   - **최종**: 운·편향 지배, 잔여 실력 미약·비유의. 1차 "미결"을 2차로 제대로 검증해 답 도출
-- [x] **★ 유저 실력순위 (일관성 지표, round-2 out-of-sample)** — `consistency_ranking.py` → `data/labeled/user_consistency.csv`
-  - **고수후보/대조군 선정 방식**(`sample_round2.py`): 1차 라벨(tsla_train+nvda_eval) 기준 —
+- [x] **★ 유저 실력순위 (일관성 지표, round-2 out-of-sample)** — `6_skill_check/consistency_ranking.py` → `data/labeled/user_consistency.csv`
+  - **고수후보/대조군 선정 방식**(`5_train2_retrain/sample_round2.py`): 1차 라벨(tsla_train+nvda_eval) 기준 —
     · **고수후보** = 1차에서 적중(C2/C3) **≥2건** → 130명
     · **대조군** = 1차에서 예측 ≥2건 **& 적중(C2/C3) ≤1** 인 323명 중 **무작위 130명**(seed=0)
     · 두 그룹의 *미라벨 새 댓글*만 2차 라벨 → 같은 기간 풀에서 시장효과 비교통제

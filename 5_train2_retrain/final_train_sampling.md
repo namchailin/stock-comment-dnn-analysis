@@ -33,7 +33,7 @@
 | **학습** | `tsla_train_enriched_final.csv` | 1차 `tsla_train` + 2차 `expert_control`의 **TSLA분**. 28,038건 / 적중 969(C2 909·C3 60). 자연 대비 적중↑(C2 608→909, C3 35→60). |
 | **평가** | `nvda_eval_final.csv` | NVDA 자연분포(적중 10.2%). **손대지 않음.** |
 
-- `model/train_colab.py` FOLDS["A"]가 이미 이 구성 → **추가 빌드 불필요.**
+- `lib/train_colab.py` FOLDS["A"]가 이미 이 구성 → **추가 빌드 불필요.**
 - 비중↑은 학습 손실가중(class weight / focal)으로. **복제(replication) 안 함**(특히 C3 수십 건 복제는 과적합).
 - (폐기) 별도 CAP/oversample 빌드(`build_train_set.py`)는 군더더기로 판단해 삭제. round-2 자체가 보강 목적이었으므로 enriched면 충분.
 
