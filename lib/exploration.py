@@ -696,7 +696,7 @@ def main():
           f"주주 {df['주주'].mean():.1%} | 뱃지 {df['has_badge'].mean():.1%}")
     for stock in ["TSLA", "NVDA"]:
         fig_price_story(stock)
-    fig_price_highlight(df)                               # 표적 ~1만/~0.5만
+    # split 구간 커버리지는 2_eda/fig_splits_coverage.py 로 분리(→ data/unlabeled/splits/)
     fig_threshold_sweep()
     fig_length(df)
     fig_user_meta(df)

@@ -18,7 +18,7 @@
 ## Step 2. EDA
 ### 라벨링 전(前)
 - [x] 변동 판정선 스윕 → **h=5, k=1.0 확정** (변동 지속율 기준) — `lib/exploration.py`, 스윕 figure
-- [x] 종목별 주가추이 + 변동밴드 스토리 차트 — `results/figures/fig_price_story_*`, `fig1_highlight_*`
+- [x] 종목별 주가추이 + 변동밴드 스토리 차트 — `results/figures/fig_price_story_*` · 구간 커버리지 `data/unlabeled/splits/*.png`(+README.md)
 - [x] 댓글 길이/토큰 분포 → **max_length=512 확정** (p95=43·p99=222·>512 0.31%) — `raw_data/token_len_{kcelectra,kcbert}.npy`
 - [x] 유저 메타데이터 비율 (주주 66.1% / 뱃지 3.9%, 유저단위) — `results/EDA_1.md`
 - [x] 변동성↔댓글량 상관 (TSLA r=0.45 / NVDA r=0.33, p<.001) — `fig5_volatility_timeseries.png`
@@ -30,7 +30,7 @@
 - [x] 사용자별 일관성 지표 (해석·보조용) — fig10
 
 ## 전처리 (학습/평가셋 추출) — plan Step 3 전반부
-- [x] 종목 교차 4개 창 추출 (fig1_highlight 구간) — `4_train1_verify/preprocess.py`
+- [x] 종목 교차 4개 창 추출 (구간 커버리지: `data/unlabeled/splits/` 그림·README) — `4_train1_verify/preprocess.py`
 - [x] 클리닝: URL 제거(0.7% 적용) + 3자 이하(이미 0건) — `data/*.csv`
 - [x] 평가셋 user-disjoint (A: 277명/1017건 제거, B: 306명/1410건 제거)
 - [x] data/ 보안 분리 (`실제_닉네임` 제외, `닉네임_ID`만)
