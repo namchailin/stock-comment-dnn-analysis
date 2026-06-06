@@ -64,6 +64,7 @@
 ## Step 4. 딥러닝 모델 학습 — **Colab(A100) 진행중** ← **현재 위치**
 - [x] **학습셋 정책 확정** `model/final_train_sampling.md` — enriched(1차+round-2 TSLA) 학습 + nvda_eval 자연분포 평가, 댓글단위 C2/C3 보강+손실가중(별도 CAP빌드 폐기), user-disjoint 0명·하락적중0건 한계 명시, 부록A 용어오해방지(고수후보≠실력점수TOP10)
 - [x] **보강 시각화** `fig_enrich.py` → `results/figures/fig_enrich_c2c3.png` — C2 608→909·C3 35→60, 적중표본 643→969(1차643+2차고수후보200+대조군126)
+- **근거(보강=주 수단 / 가중=보조)**: macro-F1은 희소클래스 성능을 평가 핵심으로 만드는 *동기*일 뿐 → 보강은 근본원인(절대 표본 부족·러닝커브 기근)을 직접 해소, macro-F1 기준 모델선택(`metric_for_best_model`)이 균형 좋은 체크포인트를 골라줘 손실 재가중은 보조. 단 보강 후에도 C0:C3≈360:1 잔여 불균형이라 focal+weight 완화는 유지. ※ "macro-F1이라서 보강만으로 충분"은 인과 역전(지표는 더 하라는 근거지 덜 하라는 근거 아님)
 - [x] 코드 준비완료: `model/train_colab.py` + **2단계 Colab 노트북** — `model/train_colab_1_verify.ipynb`(1단계: 원본셋 파이프라인 검증·baseline) → `model/train_colab_2_retrain.ipynb`(2단계: enriched 보강+focal/weight완화로 본 학습)
 - [x] KcELECTRA **특수토큰 TemplateProcessing** — **Colab에서 적용 확인됨**("[특수토큰 보정]" 로그)
 - [x] 입력: 텍스트 + `[주주]`/`[비주주]` prepend(임베딩 resize) / **뱃지 제외** — 동작 확인

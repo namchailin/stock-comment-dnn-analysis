@@ -53,7 +53,7 @@ matplotlib.rcParams.update({
     "grid.linewidth": 0.7,
 })
 
-ROOT = os.path.dirname(os.path.abspath(__file__))   # 프로젝트 루트(이 파일이 루트에 위치)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # 프로젝트 루트(이 파일이 루트에 위치)
 # 수집 원본·파생 캐시는 raw_data/, 학습/평가셋은 data/ 에 분리 보관
 DATA = os.path.join(ROOT, "data", "unlabeled", "raw")
 FIGDIR = os.path.join(ROOT, "results", "figures")

@@ -7,7 +7,8 @@ collection/.salt
 __pycache__/
 *.pyc
 
-# ── 원본 데이터 (실제_닉네임 포함 + 대용량) — 커밋 금지 ──
-data/unlabeled/raw/
+# ── 원본 데이터 (실제_닉네임 포함 + 대용량) — 내용물 커밋 금지, 폴더는 유지 ──
+data/unlabeled/raw/*
+!data/unlabeled/raw/.gitkeep
 
 # 올리는 것: data/labeled/*.csv, data/unlabeled/splits/*.csv (모두 닉네임_ID만, 익명화 완료)

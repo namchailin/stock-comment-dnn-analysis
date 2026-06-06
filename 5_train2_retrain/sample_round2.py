@@ -5,7 +5,7 @@ import re
 import numpy as np
 import pandas as pd
 
-ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 LABELED = os.path.join(DATA, "labeled")
 URL_RE = re.compile(r"https?://\S+|www\.\S+|\b\S+\.(?:com|net|org|io|ly|kr|co\.kr)(?:/\S*)?",

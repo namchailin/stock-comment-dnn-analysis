@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # 1차 EDA 스타일 그대로 재사용 (폰트 rcParams·색·_save·경로는 import 시 적용됨)
+import os,sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'lib'))
 from exploration import UP, DOWN, NEUTRAL, FIGDIR, _save, ROOT
 
 DATA = os.path.join(ROOT, "data")

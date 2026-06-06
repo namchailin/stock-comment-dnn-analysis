@@ -8,6 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy import stats
+import os,sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'lib'))
 from exploration import ROOT
 
 DATA = os.path.join(ROOT, "data", "labeled")

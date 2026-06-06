@@ -7,6 +7,7 @@ import os
 import re
 import pandas as pd
 
+import os,sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'lib'))
 from exploration import (load_comments, _best_var_window, _best_eval_window,
                          _window_users, ROOT)
 

@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os,sys; sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'lib'))
 import exploration as E
 
 fin = pd.concat([pd.read_csv(os.path.join(E.ROOT, "data", "labeled", f"{f}_final.csv"),
