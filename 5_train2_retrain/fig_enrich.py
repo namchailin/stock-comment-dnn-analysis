@@ -58,8 +58,8 @@ axR.margins(y=0.12)
 # 제목·소제목을 그래프 위로 띄우되, 제목↔소제목 간격은 좁게
 fig.subplots_adjust(top=0.80)
 fig.suptitle("2차 라벨링으로 희소클래스(C2·C3) 학습표본 보강 — TSLA 학습셋",
-             fontsize=15.5, fontweight="bold", y=0.985)
-fig.text(0.5, 0.93, "비중은 ~3.5%로 유지(C0도 함께 증가) · 보강의 본질은 적중 '절대량'↑ → 러닝커브 데이터부족 완화",
+             fontsize=15.5, fontweight="bold", y=0.99)
+fig.text(0.5, 0.918, "비중은 ~3.5%로 유지(C0도 함께 증가) · 보강의 본질은 적중 '절대량'↑ → 러닝커브 데이터부족 완화",
          ha="center", fontsize=9.5, color="0.45")
 _out = os.path.join(E.ROOT, "results", "fig_enrich_c2c3.png")
 fig.savefig(_out, dpi=130, bbox_inches="tight")
