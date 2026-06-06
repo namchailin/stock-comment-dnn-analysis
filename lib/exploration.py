@@ -137,7 +137,8 @@ def _episodes(state, gap=2):
 
 # ── A. 주가 스토리 (굵은 라벨 밴드 + 거래량 + 누적수익률) ────
 def fig_price_story(stock, h=H_DEFAULT, k=K_DEFAULT, max_labels=8,
-                    highlights=None, suffix="", htitle=""):
+                    highlights=None, suffix="", htitle="", save_as=None,
+                    outdir=None, title_override=None, subtitle_override=None):
     p, mu, sig = load_prices(stock)
     p = p.reset_index(drop=True)
     p["RW"] = p["Close"].pct_change(h) * 100        # 최근 h거래일 누적수익률(%)
@@ -225,9 +226,21 @@ def fig_price_story(stock, h=H_DEFAULT, k=K_DEFAULT, max_labels=8,
 
     fig.tight_layout()
     fig.subplots_adjust(top=0.87, hspace=0.30)       # 위 패널 날짜 라벨 + 패널 간격
+    if title_override:
+        title = title_override
+    if subtitle_override:
+        subtitle = subtitle_override
+    if save_as:
+        fname = save_as
     fig.suptitle(title, fontsize=17, fontweight="bold", y=0.98)
     fig.text(0.5, 0.918, subtitle, ha="center", fontsize=10, color="0.45")
-    _save(fig, fname)
+    if outdir:                                        # split 옆 저장(설계 설명서용)
+        os.makedirs(outdir, exist_ok=True)
+        fig.savefig(os.path.join(outdir, fname), dpi=130, bbox_inches="tight")
+        plt.close(fig)
+        print(f"  저장: {os.path.relpath(os.path.join(outdir, fname), ROOT)}")
+    else:
+        _save(fig, fname)
 
 
 # ── A-2. 누적변동 큰 연속 구간(댓글량 표적)을 fig1 복제본에 표시 ──
