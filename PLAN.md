@@ -354,6 +354,7 @@ Gemini API는 `google_search` 도구로 추론 중 실시간 검색이 가능하
 
 - **불균형 처리:** class weight 또는 focal loss, 소수 클래스 oversampling.
 - **모델 선택 기준:** validation **macro-F1** 기준 early stopping(정확도 아님).
+- **🎲 고정 시드 `seed = 42` (전 모델·전 단계 동일):** 벤치마크 3모델(KcELECTRA·KLUE-RoBERTa·KR-FinBERT)과 1·2단계 학습이 **모두 같은 시드 `42`** 를 쓴다 — train/val 분할 `train_test_split(random_state=42)` · 학습 루프 `TrainingArguments(seed=42)`. 모델 간·단계 간 비교를 **동일 분할 조건**에서 수행하기 위함. (GPU·fp16 비결정성으로 완전 bit-exact 재현은 아님.)
 
 <aside>
 ⚠️

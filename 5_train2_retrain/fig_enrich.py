@@ -63,3 +63,17 @@ E._save(fig, "fig_enrich_c2c3.png")
 print("저장: results/figures/fig_enrich_c2c3.png")
 print(f"  1차 Class {dict(d1)} | enriched {dict(de)}")
 print(f"  적중 출처: 1차 {S1} / 2차고수후보 {Sg} / 2차대조군 {Sc} = {tot}")
+
+# ── 최종 학습셋(enriched) 커버리지: fig1 위에 학습 댓글 일별 분포(1차/2차 보강) ──
+dt = pd.to_datetime(en["작성일"], format="ISO8601", utc=True, errors="coerce")
+en["d"] = dt.dt.tz_convert("America/New_York").dt.normalize().dt.tz_localize(None)
+b1s = en[en["commentId"].isin(tt_ids)].groupby("d").size()       # 1차(고변동 윈도우)
+b2s = en[~en["commentId"].isin(tt_ids)].groupby("d").size()      # 2차(round-2 보강)
+HERE = os.path.dirname(os.path.abspath(__file__))
+E.fig_price_story(
+    "TSLA",
+    bars=[("1차 (고변동 윈도우)", b1s, "#546E7A"), ("2차 (round-2 보강)", b2s, "#2E7D32")],
+    save_as="train_enriched_coverage.png", outdir=HERE,
+    title_override="최종 학습셋(enriched) — TSLA · Fold A 학습 (1차 + 2차 보강)",
+    subtitle_override=("fig1(빨강=상승·파랑=하락 변동사건) 위 학습 댓글 일별 분포  ·  "
+                       f"1차 고변동 윈도우 + 2차 round-2 전기간 보강 · 총 {len(en):,}건"))

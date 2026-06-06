@@ -598,8 +598,8 @@ def fig_length(df):
 
 
 # ── D. 유저 메타 ────────────────────────────────────────────
-def _user_meta_panel(df, label, fname):
-    # 유저(닉네임_ID) 단위 집계 — 댓글 수 편향 제거
+def _user_meta_row(fig, gs, r, df, label, coltitles):
+    """fig4 한 행(주주 파이 · 뱃지 파이 · 뱃지종류 막대) — 유저(닉네임_ID) 단위 집계."""
     g = df.groupby("닉네임_ID")
     u_share = g["주주"].max()                       # 한 번이라도 주주면 주주
     u_badge = g["has_badge"].max()
@@ -608,38 +608,39 @@ def _user_meta_panel(df, label, fname):
     u_btype = badged.groupby("닉네임_ID")["뱃지"].agg(lambda x: x.mode().iloc[0])
     btype = u_btype.value_counts()[::-1]            # 뱃지 종류별 유저 수
 
-    fig = plt.figure(figsize=(17, 5))
-    # 파이 둘은 붙이고(좁은 wspace), 빈 스페이서 컬럼으로 막대그래프만 따로 넓게
-    gs = fig.add_gridspec(1, 4, width_ratios=[1, 1, 0.18, 1.7], wspace=0.12,
-                          top=0.82, bottom=0.1)   # 상단 제목과 그래프 간격 확보
-    axes = [fig.add_subplot(gs[0]), fig.add_subplot(gs[1]),
-            fig.add_subplot(gs[3])]
-    axes[0].grid(False); axes[1].grid(False)       # 파이엔 그리드 X
+    a0 = fig.add_subplot(gs[r, 0]); a1 = fig.add_subplot(gs[r, 1])
+    a2 = fig.add_subplot(gs[r, 3])
+    a0.grid(False); a1.grid(False)                  # 파이엔 그리드 X
     s1 = int(u_share.sum())
-    axes[0].pie([s1, nU - s1], labels=["주주", "비주주"], autopct="%1.1f%%",
-                colors=["#4C9F70", "#D0D0D0"], startangle=90)
-    axes[0].set_title("유저 내 주주 점유율")
+    a0.pie([s1, nU - s1], labels=["주주", "비주주"], autopct="%1.1f%%",
+           colors=["#4C9F70", "#D0D0D0"], startangle=90)
     b1 = int(u_badge.sum())
-    axes[1].pie([b1, nU - b1], labels=["뱃지 보유자", "없음"], autopct="%1.1f%%",
-                colors=["#E6A817", "#D0D0D0"], startangle=90)
-    axes[1].set_title("유저 내 뱃지 보유자 점유율")
-    axes[2].barh(btype.index, btype.values, color="#E6A817")
-    tot_b = int(btype.sum())                       # 뱃지 보유 유저 수
-    for yi, v in enumerate(btype.values):          # 막대 끝에 유저수·비율
-        axes[2].text(v + tot_b * 0.012, yi, f"{v:,}명 ({100*v/tot_b:.1f}%)",
-                     va="center", fontsize=9.5, color="#8A6500", fontweight="bold")
-    axes[2].set_xlim(0, btype.max() * 1.32)
-    axes[2].set_title("뱃지 종류별 유저 수")
-    axes[2].set_xlabel("유저 수")
-    fig.suptitle(f"유저 메타데이터 분포 ({label}, 유저 {nU:,}명)", fontweight="bold")
-    _save(fig, fname)
+    a1.pie([b1, nU - b1], labels=["뱃지 보유자", "없음"], autopct="%1.1f%%",
+           colors=["#E6A817", "#D0D0D0"], startangle=90)
+    a2.barh(btype.index, btype.values, color="#E6A817")
+    tot_b = int(btype.sum())                        # 뱃지 보유 유저 수
+    for yi, v in enumerate(btype.values):           # 막대 끝에 유저수·비율
+        a2.text(v + tot_b * 0.012, yi, f"{v:,}명 ({100*v/tot_b:.1f}%)",
+                va="center", fontsize=9, color="#8A6500", fontweight="bold")
+    a2.set_xlim(0, btype.max() * 1.32); a2.set_xlabel("유저 수")
+    if coltitles:                                   # 열 제목은 맨 윗행에만
+        a0.set_title("유저 내 주주 점유율"); a1.set_title("유저 내 뱃지 보유자 점유율")
+        a2.set_title("뱃지 종류별 유저 수")
+    a0.text(-0.32, 0.5, f"{label}\n(유저 {nU:,}명)", transform=a0.transAxes,
+            rotation=90, va="center", ha="center", fontweight="bold", fontsize=12.5)
 
 
 def fig_user_meta(df):
-    _user_meta_panel(df, "TSLA + NVDA", "fig4_user_meta.png")
-    for stock in ["TSLA", "NVDA"]:
-        _user_meta_panel(df[df["종목명"] == stock], stock,
-                         f"fig4_user_meta_{stock}.png")
+    fig = plt.figure(figsize=(16, 14))             # 3행(전체·TSLA·NVDA)을 한 그림으로
+    gs = fig.add_gridspec(3, 4, width_ratios=[1, 1, 0.18, 1.7],
+                          wspace=0.12, hspace=0.30, top=0.92, bottom=0.05, left=0.09)
+    rows = [("TSLA + NVDA", df), ("TSLA", df[df["종목명"] == "TSLA"]),
+            ("NVDA", df[df["종목명"] == "NVDA"])]
+    for r, (label, d) in enumerate(rows):
+        _user_meta_row(fig, gs, r, d, label, coltitles=(r == 0))
+    fig.suptitle("유저 메타데이터 분포 — 전체 · TSLA · NVDA (유저 단위)",
+                 fontsize=15, fontweight="bold", y=0.965)
+    _save(fig, "fig4_user_meta.png")
 
 
 # ── 댓글-주가 일별 병합(미국 거래일 기준) ───────────────────

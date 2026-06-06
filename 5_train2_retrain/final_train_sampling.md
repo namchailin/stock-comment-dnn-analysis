@@ -37,6 +37,9 @@
 - 비중↑은 학습 손실가중(class weight / focal)으로. **복제(replication) 안 함**(특히 C3 수십 건 복제는 과적합).
 - (폐기) 별도 CAP/oversample 빌드(`build_train_set.py`)는 군더더기로 판단해 삭제. round-2 자체가 보강 목적이었으므로 enriched면 충분.
 
+**최종 학습셋 커버리지** (fig1 변동사건 위 학습 댓글 일별 분포 — 1차 고변동 윈도우 + 2차 round-2 전기간 보강):
+![train_enriched_coverage](train_enriched_coverage.png)
+
 ### 왜 "round-2만"이 아니라 "1차+round-2"인가
 round-2는 1차에 *더하는* 보강분. round-2 TSLA만 떼면 적중 326건으로 **오히려 줄어**(1차 적중 643건 버림) → 보강 목적과 반대. 그래서 둘을 합친 enriched(969 적중)를 쓴다.
 
