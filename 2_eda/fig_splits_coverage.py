@@ -37,15 +37,26 @@ def make(split_name, stock, sub_csv, outdir):
     df = pd.read_csv(sub_csv, encoding="utf-8-sig")
     df = df[df["종목명"] == stock].copy()
     dt = pd.to_datetime(df["작성일"], format="ISO8601", utc=True, errors="coerce")
+    df["d"] = dt.dt.tz_convert("America/New_York").dt.normalize().dt.tz_localize(None)
     us = dt.dt.tz_convert("America/New_York").dt.strftime("%Y-%m-%d")
     d0, d1 = us.min(), us.max()
-    suffix = f"_{stock.lower()}" if split_name == "expert_control" else ""
-    hl = window_hl(stock, d0, d1, len(df), f"{split_name} ({stock})")
-    E.fig_price_story(
-        stock, highlights=[hl], save_as=f"{split_name}{suffix}.png", outdir=outdir,
-        title_override=f"{split_name} — {stock} 추출 구간  ·  {ROLE.get(split_name,'')}",
-        subtitle_override=("fig1(빨강=상승·파랑=하락 변동사건) 위에 추출 구간(녹색 점선) 표시  ·  "
-                           f"댓글 {len(df):,}건 · {d0}~{d1}"))
+    title = f"{split_name} — {stock} 추출 구간  ·  {ROLE.get(split_name,'')}"
+
+    if split_name == "expert_control":   # 사람 기반·전기간 → 추출 사용자 댓글을 그룹 막대로
+        bars = [("고수후보", df[df["grp"] == "고수후보"].groupby("d").size(), "#8E24AA"),
+                ("대조군",  df[df["grp"] == "대조군"].groupby("d").size(), "#607D8B")]
+        E.fig_price_story(
+            stock, bars=bars, save_as=f"{split_name}_{stock.lower()}.png", outdir=outdir,
+            title_override=title,
+            subtitle_override=("fig1(빨강=상승·파랑=하락 변동사건) 위에 추출 사용자(고수후보+대조군) "
+                               f"일별 댓글 막대  ·  총 {len(df):,}건 · {d0}~{d1}"))
+    else:                                # 연속 구간 → 추출구간 박스
+        hl = window_hl(stock, d0, d1, len(df), f"{split_name} ({stock})")
+        E.fig_price_story(
+            stock, highlights=[hl], save_as=f"{split_name}.png", outdir=outdir,
+            title_override=title,
+            subtitle_override=("fig1(빨강=상승·파랑=하락 변동사건) 위에 추출 구간(녹색 점선) 표시  ·  "
+                               f"댓글 {len(df):,}건 · {d0}~{d1}"))
 
 
 JOBS = [

@@ -138,7 +138,8 @@ def _episodes(state, gap=2):
 # ── A. 주가 스토리 (굵은 라벨 밴드 + 거래량 + 누적수익률) ────
 def fig_price_story(stock, h=H_DEFAULT, k=K_DEFAULT, max_labels=8,
                     highlights=None, suffix="", htitle="", save_as=None,
-                    outdir=None, title_override=None, subtitle_override=None):
+                    outdir=None, title_override=None, subtitle_override=None,
+                    bars=None):
     p, mu, sig = load_prices(stock)
     p = p.reset_index(drop=True)
     p["RW"] = p["Close"].pct_change(h) * 100        # 최근 h거래일 누적수익률(%)
@@ -182,9 +183,23 @@ def fig_price_story(stock, h=H_DEFAULT, k=K_DEFAULT, max_labels=8,
                      color=c, fontweight="bold")
     axP.plot(x, w["Close"].to_numpy(), color="black", lw=1.8, zorder=3)
     axP.set_ylabel("종가(USD)", fontsize=12)
-    axP.legend(handles=[Patch(color=UP, alpha=0.4, label="상승 사건"),
-                        Patch(color=DOWN, alpha=0.4, label="하락 사건")],
-               loc="lower left", fontsize=11, ncol=2)
+    leg_h = [Patch(color=UP, alpha=0.4, label="상승 사건"),
+             Patch(color=DOWN, alpha=0.4, label="하락 사건")]
+    if bars:                                          # 추출 사용자 일별 댓글(그룹 누적 막대)
+        axPb = axP.twinx()
+        wd = pd.to_datetime(w["Date"])
+        base = np.zeros(len(wd))
+        for label, series, color in bars:
+            vals = np.asarray(series.reindex(wd, fill_value=0), dtype=float)
+            axPb.bar(x, vals, bottom=base, width=1.0, color=color, alpha=0.6, zorder=2,
+                     label=label)
+            base = base + vals
+            leg_h.append(Patch(color=color, alpha=0.6, label=label))
+        axPb.set_ylabel("일별 댓글 수", fontsize=10)
+        axPb.set_ylim(0, max(1, base.max() * 2.6))    # 막대는 하단에 깔리게
+        axP.set_zorder(axPb.get_zorder() + 1)         # 가격·사건을 막대 위로
+        axP.patch.set_visible(False)
+    axP.legend(handles=leg_h, loc="lower left", fontsize=10, ncol=2)
 
     # 2단: 최근 h일 누적수익률 막대 (사건=빨강/파랑, 무변동=회색)
     bar_c = [UP if v >= up_thr else DOWN if v <= dn_thr else NEUTRAL for v in rw]
