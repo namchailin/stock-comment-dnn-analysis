@@ -12,3 +12,13 @@ data/unlabeled/raw/*
 !data/unlabeled/raw/.gitkeep
 
 # 올리는 것: data/labeled/*.csv, data/unlabeled/splits/*.csv (모두 닉네임_ID만, 익명화 완료)
+
+# ── 진행/계획 문서 (커밋 제외) ──
+PLAN.md
+PROGRESS.md
+
+# ── 빌드 임시물 ──
+*.log
+.ziptmp/
+*.aux
+*.out

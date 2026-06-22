@@ -16,7 +16,7 @@ LABELED = os.path.join(DATA, "labeled")
 # Fold A 단방향(현재 범위). 라벨된 것만 자동 사용.
 FOLD = {"tsla_train": "TSLA", "nvda_eval": "NVDA"}
 
-CLASS_NAME = {0: "C0 예측없음", 1: "C1 예측실패", 2: "C2 방향적중", 3: "C3 날짜적중"}
+CLASS_NAME = {0: "Class 0 예측없음", 1: "Class 1 예측실패", 2: "Class 2 방향적중", 3: "Class 3 날짜적중"}
 CLASS_C = {0: NEUTRAL, 1: "#5B8DEF", 2: "#FF9800", 3: UP}      # C3=빨강 강조
 DIR_C = {"상승": UP, "하락": DOWN, "없음": NEUTRAL}             # 1차 팔레트 동일
 REL_C = {"예측": UP, "리액션": NEUTRAL}
@@ -60,7 +60,7 @@ def fig_class_dist(df):
                   color=[CLASS_C[c] for c in [0, 1, 2, 3]], edgecolor="white")
     _annot_bar(ax, bars, len(df))
     ax.set_ylabel("댓글 수")
-    ax.set_title(f"4-Class 라벨 분포 (n={len(df):,})  —  C3(날짜적중) 희소성 주목")
+    ax.set_title(f"네 가지 클래스 라벨 분포 (n={len(df):,})  —  Class 3(날짜적중) 희소성 주목")
     ax.set_ylim(0, vc.max() * 1.18)
     _save(fig, "fig6_class_dist.png")
 

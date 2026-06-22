@@ -49,7 +49,7 @@ def main():
     xs = np.array([d["전반_초과"].min()*100, d["전반_초과"].max()*100])
     ax.plot(xs, z[0]*xs + z[1], color="#333", ls="--", lw=1.5)
     ax.set_xlabel("전반 초과 적중률 (기저 대비, %)"); ax.set_ylabel("후반 초과 적중률 (%)")
-    ax.set_title(f"split-half 지속성 — r={r:.2f}(p={p:.3f})\n우상향=지속적 실력 / 무상관=일회성")
+    ax.set_title(f"전·후반 분할 지속성 — r={r:.2f}(p={p:.3f})\n우상향=지속적 실력 / 무상관=일회성")
     _save(fig, "fig12_split_half.png")
 
 

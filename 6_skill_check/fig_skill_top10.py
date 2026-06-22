@@ -54,10 +54,10 @@ tbl = ax.table(cellText=rows, colLabels=cols, cellColours=colors,
 tbl.auto_set_font_size(False); tbl.set_fontsize(12); tbl.scale(1, 1.7)
 for j in range(len(cols)):                       # 헤더 스타일
     c = tbl[0, j]; c.set_facecolor("#37474F"); c.set_text_props(color="white", fontweight="bold")
-fig.suptitle("유저 실력순위 TOP 10  (round-2 out-of-sample · 예측 5회↑ 147명 중)",
+fig.suptitle("유저 실력 순위 상위 10명  (2차 라벨링 기준 · 예측 5회 이상 147명 중)",
              fontsize=14, fontweight="bold", y=0.965)
-fig.text(0.5, 0.895, f"실력점수 = 예측방향 누적변동의 시장대비 초과(볼륨보정)   ·   "
-         f"TOP10 = 고수후보 {nGO} : 대조군 {nCT}  → 사전 선정 집단의 우위 없음",
+fig.text(0.5, 0.895, f"실력점수 = 예측방향 누적변동의 시장대비 초과(거래량 보정)   ·   "
+         f"상위 10명 = 고수 후보 {nGO} : 대조군 {nCT}  → 사전 선정 집단의 우위 없음",
          ha="center", fontsize=10.5, color="0.30")
 fig.text(0.5, 0.03, "적중률 = 전체%(TSLA%/NVDA%)  ·  분홍=고수후보, 파랑=대조군",
          ha="center", fontsize=9.5, color="0.45")
